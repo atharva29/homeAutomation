@@ -7,18 +7,16 @@ import (
 
 var pass = make(chan string)
 func main(){
-
-for {
   conn,err:=net.Dial("tcp",":2000")
   if err!= nil{
     fmt.Println("ERR")
     return
-  } else {
+  }
+
     go res(conn)
     go Reader(conn)
     go writer(conn)
-    }
-  }
+for{}    
 }
 
 

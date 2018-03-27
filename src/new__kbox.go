@@ -124,7 +124,7 @@ func websocket_server(){
 			query_to_db <- db_query
 		}
 		//query_to_db <- "select * from people"
-		
+
 		/*
 		default :{
 			_, message, err := conn.ReadMessage()
@@ -140,8 +140,8 @@ func websocket_server(){
 			query_to_db <- db_query
 		}
 		*/
-	})	
-	http.ListenAndServe(":8080",nil)		
+	})
+	http.ListenAndServe(":8080",nil)
 }
 
 func socket_writer(conn *websocket.Conn){
@@ -174,7 +174,7 @@ func socket_reader(conn *websocket.Conn){
 }
 */
 
-	
+
 func handle_db(){
 	os.Remove("./foo.db")
 	database, _ := sql.Open("sqlite3","./foo.db")
@@ -253,8 +253,8 @@ func handle_db(){
 		}
 	}
 }
-	
-	
+
+
 func Mapping(){
 	var Mapper = make(map[string]net.Conn)
 	for{
