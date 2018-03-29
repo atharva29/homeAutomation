@@ -5,18 +5,28 @@ import (
 "bufio"
 "os"   )
 
+
+var indicator = 0
 var pass = make(chan string)
 func main(){
-  conn,err:=net.Dial("tcp",":2000")
-  if err!= nil{
-    fmt.Println("ERR")
-    return
-  }
+    fmt.Println("Start")
+                for {
 
-    go res(conn)
-    go Reader(conn)
-    go writer(conn)
-for{}    
+                  if indicator == 0 {
+                  fmt.Println("Connecting .....")
+                  conn,err := net.Dial("tcp",":2000")
+                    if err != nil{
+                    } else {
+                            indicator = 1
+                            fmt.Println("Connected")
+                            go res(conn)
+                            go Reader(conn)
+                            go writer(conn)
+                     }
+                  }
+                }
+
+
 }
 
 
@@ -26,6 +36,7 @@ func res(conn net.Conn){
         text,err:=reader.ReadString('\n')
         if err != nil {
           fmt.Println("Client DISCONNECTED")
+          indicator = 0
           pass <- "close"
           return
           } else {
@@ -60,6 +71,7 @@ func res(conn net.Conn){
         writer.Flush()
               } else {
                 conn.Close()
+                indicator = 0
                 fmt.Println("GOTTA")
                 return
               }

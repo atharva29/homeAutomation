@@ -11,28 +11,29 @@ import (
   "bufio"   // used for taking inputs from user or port
   "os"      // used to read user inputs
   _ "github.com/mattn/go-sqlite3" // database
-  "strings"
+  "strings"     //
   "database/sql"
   "strconv"
 )
 
 
-var indicator = 1
+var indicator = 0   // indicator = 0 , not connected to server , if its '1' means connected to server
 
-var pass  = make(chan string)   // channel for data
+var pass  = make(chan string)   // channel for Cient data
 var query_to_db = make(chan string) // channel for database
 var res_to_query = make(chan string)
-var passServer = make (chan string)
+var passServer = make (chan string) // channel for Server data
 
 
 func main(){
 fmt.Println("Start")
-go tcpClient()
 l,err := net.Listen("tcp",":2000")  //set a server listening at port 20000
-printErr(err)
-
+if err!=nil{
+  printErr(err)
+  }
+go tcpClient() // function for communication with Server
   for {
-            conn,err := l.Accept()
+            conn,err := l.Accept() // accept incoming client connection
             if err != nil{
                 fmt.Println(err)
                 }
@@ -137,7 +138,7 @@ func writer(conn net.Conn){
                 }
 
 
-
+// function for writing data to server , used to pass response for query to server
 func TcpServerWriter(conn net.Conn){
   writer:= bufio.NewWriter(conn) // makes a new writer for port
   for {
@@ -147,8 +148,8 @@ func TcpServerWriter(conn net.Conn){
         writer.WriteString(values)    //write string to port
         writer.Flush()                // clear the buffer
           }  else if (values == "close"){ // if reading error is found then close the connection
-                    fmt.Println("GOTTA")
                     conn.Close()      // closes the connection
+                    indicator = 0     // server DISCONNECTED
                     return
               }
             }
@@ -156,12 +157,12 @@ func TcpServerWriter(conn net.Conn){
       }
 }
 
-
+// function for reading commands from server
 func TcpServerReader(conn net.Conn){
   reader := bufio.NewReader(conn)     // set a new reader for tcp
                 // for loop is used for continuos reading from port
   for {
-      text,err:=reader.ReadString('\n')
+      text,err:=reader.ReadString('\n') // read string from server
       if err != nil {
         fmt.Println("Server DISCONNECTED")
         passServer <- "close"   // this will close the writer
@@ -170,24 +171,29 @@ func TcpServerReader(conn net.Conn){
             if (text == "echo\n"){    // this condition is used for checking connection
               passServer <-text
             }
-          fmt.Println("text : " + text)   // print the recieved data
+          fmt.Println("Server COMMAND : " + text)   // print the recieved data
           //dbChannel <- text
           }
         }
   }
 
-  func tcpClient(){
 
-      //  if indicator ==1 {
-          conn,err:=net.Dial("tcp",":6600")
-          if err != nil{
-            fmt.Println(err)
-            return
-          }
-        //  } else {
-            go TcpServerReader(conn)
-            go TcpServerWriter(conn)
-            indicator = 1
-        for{}
-        //  }
-        }
+// function for communication with server
+func tcpClient(){
+    for {
+    // tries to connect with server
+    if indicator == 0 {
+      fmt.Println("Connecting .....")
+      conn,err := net.Dial("tcp",":6600")
+        if err != nil{
+        } else {
+          // connected to server
+                indicator = 1
+                fmt.Println("Connected")
+                go TcpServerReader(conn)// read incoming data
+              //  go Reader(conn)
+                go TcpServerWriter(conn) // write data to server
+         }
+      }
+    }
+  }
