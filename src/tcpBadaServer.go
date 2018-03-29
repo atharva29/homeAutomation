@@ -12,7 +12,7 @@ var pass  = make(chan string)   // channel for Cient data
 
 func main(){
 fmt.Println("Start")
-l,err := net.Listen("tcp",":6600")  //set a server listening at port 20000
+l,err := net.Listen("tcp",":6600")  //set a server listening at port 6600
 if err!=nil{
   printErr(err)
   }
