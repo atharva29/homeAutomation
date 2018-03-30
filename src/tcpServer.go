@@ -18,12 +18,13 @@ import (
 
 
 var indicator = 0   // indicator = 0 , not connected to server , if its '1' means connected to server
-
+var num = 0
 var pass  = make(chan string)   // channel for Cient data
-var query_to_db = make(chan string) // channel for database
-var res_to_query = make(chan string)
-var passServer = make (chan string) // channel for Server data
+var data_to_db = make(chan string) // channel for database
+//var res_to_query = make(chan string)
+var passServer = make (chan string) // channel for RESPONSE OF  Server query database
 
+var query_to_db = make (chan string)
 
 func main(){
 fmt.Println("Start")
@@ -32,6 +33,7 @@ if err!=nil{
   printErr(err)
   }
 go tcpClient() // function for communication with Server
+
   for {
             conn,err := l.Accept() // accept incoming client connection
             if err != nil{
@@ -57,11 +59,8 @@ func res(conn net.Conn){
           pass <- "close"   // this will close the writer
           return
           } else {
-              if (text == "echo\n"){    // this condition is used for checking connection
-                pass <-text
-              }
             fmt.Println("text : " + text)   // print the recieved data
-            //dbChannel <- text
+           data_to_db <- text
             }
           }
       }
@@ -77,6 +76,7 @@ func Reader(conn net.Conn){
     return
     }else {
     pass <- msg         // pass the user input to channel
+
       }
     }
   }
@@ -101,7 +101,6 @@ func writer(conn net.Conn){
         writer.WriteString(values)    //write string to port
         writer.Flush()                // clear the buffer
           }  else if (values == "close"){ // if reading error is found then close the connection
-                    fmt.Println("GOTTA")
                     conn.Close()      // closes the connection
                     return
               }
@@ -113,39 +112,64 @@ func writer(conn net.Conn){
 
 
    func database(conn net.Conn){
-     database, _ := sql.Open("sqlite3","./attendance.db")       // creates a new db file
-     statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS student (ID INTEGER NULL, NAME TEXT NULL)")  //create table
+     os.Remove("./attendance.db")
+   	 database, _ := sql.Open("sqlite3","./attendance.db")       // creates a new db file
+     statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS student (num INTEGER PRIMARY KEY,ID INTEGER NULL, NAME TEXT NULL,date_time DATETIME DEFAULT CURRENT_TIMESTAMP )")  //create table
      statement.Exec()  // execute create table statement
-     statement, _ = database.Prepare("INSERT INTO student (ID,NAME) VALUES (?,?)") // make statement for entering values afterwards
+     statement, _ = database.Prepare("INSERT INTO student (num,ID,NAME) VALUES (?,?,?)") // make statement for entering values afterwards
 
-                      Writer := bufio.NewWriter(conn)// create a new writer
-                      go func(){
+     //writer:= bufio.NewWriter(conn) // makes a new writer for port
+
                         for{
                           select {
-                            case data:=<-query_to_db:{
+                            case data:=<-data_to_db:{
+                              num = num+1
                               data1:=strings.TrimSuffix(data,"\n")
                               temp:=strings.Split(data1,",")
                               ID,_:=strconv.Atoi(temp[0])
                               NAME:=temp[1]
-                              fmt.Println(temp)
-                              statement.Exec(ID,NAME)
-                              Writer.WriteString("Executed in DB")
-                              fmt.Println(ID,NAME)
+                              statement.Exec(num,ID,NAME)
+                              fmt.Println(num,ID,NAME)
                                   }
+
+
+                            case db_query := <- query_to_db :{
+                              //query := strings.TrimSuffix(db_query,"\n")
+                              rows, err:= database.Query(db_query)
+                      				if err != nil{
+                      					fmt.Println("ERROR ROWS",err)
+                                return
                                 }
-                            }
-                          }()
+                      				var num string
+                      				var ID string
+                      				var NAME string
+                      				var date_time string
+                      				for rows.Next() {
+                      					//fmt.Println("in rows.next for loop")
+                      					rows.Scan(&num,&ID, &NAME, &date_time)
+                      					total:=  fmt.Sprintf(num + ": " + ID + " ," + NAME )
+                      					fmt.Println(total)
+                                //fmt.Println("total -----")
+                                //fmt.Println("type of total:",reflect.TypeOf(total))
+                      				  passServer <- total
+                      					//fmt.Println("sent over res_to_query")
+                                //    writer.WriteString(total)
+                              }
+                      			}
+                          }
+                        }
                 }
 
 
 // function for writing data to server , used to pass response for query to server
 func TcpServerWriter(conn net.Conn){
   writer:= bufio.NewWriter(conn) // makes a new writer for port
+
   for {
       select{
       case values := <- passServer :{
         if (values != "close"){
-        writer.WriteString(values)    //write string to port
+        writer.WriteString(values +"\n")    //write string to port
         writer.Flush()                // clear the buffer
           }  else if (values == "close"){ // if reading error is found then close the connection
                     conn.Close()      // closes the connection
@@ -156,6 +180,21 @@ func TcpServerWriter(conn net.Conn){
          }
       }
 }
+
+func serverWriter(conn net.Conn){
+  writer:= bufio.NewWriter(conn) // makes a new writer for port
+  for values := range passServer{
+      if (values != "close"){
+      writer.WriteString(values +"\n")    //write string to port
+      writer.Flush()                // clear the buffer
+        }  else if (values == "close"){ // if reading error is found then close the connection
+                  conn.Close()      // closes the connection
+                  indicator = 0     // server DISCONNECTED
+                  return
+          }
+    }
+}
+
 
 // function for reading commands from server
 func TcpServerReader(conn net.Conn){
@@ -168,11 +207,10 @@ func TcpServerReader(conn net.Conn){
         passServer <- "close"   // this will close the writer
         return
         } else {
-            if (text == "echo\n"){    // this condition is used for checking connection
-              passServer <-text
-            }
+
           fmt.Println("Server COMMAND : " + text)   // print the recieved data
-          //dbChannel <- text
+          query_to_db <-text
+          //passServer <-text
           }
         }
   }
@@ -186,13 +224,14 @@ func tcpClient(){
       fmt.Println("Connecting .....")
       conn,err := net.Dial("tcp",":6600")
         if err != nil{
+
         } else {
           // connected to server
                 indicator = 1
                 fmt.Println("Connected")
                 go TcpServerReader(conn)// read incoming data
-              //  go Reader(conn)
                 go TcpServerWriter(conn) // write data to server
+                go database(conn)
          }
       }
     }
