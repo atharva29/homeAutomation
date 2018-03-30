@@ -18,13 +18,13 @@ import (
 
 
 var indicator = 0   // indicator = 0 , not connected to server , if its '1' means connected to server
-var num = 0
+var num = 0   // auto increment of database
 var pass  = make(chan string)   // channel for Cient data
 var data_to_db = make(chan string) // channel for database
 //var res_to_query = make(chan string)
 var passServer = make (chan string) // channel for RESPONSE OF  Server query database
 
-var query_to_db = make (chan string)
+var query_to_db = make (chan string) //passess query passed by user to database
 
 func main(){
 fmt.Println("Start")
@@ -118,43 +118,39 @@ func writer(conn net.Conn){
      statement.Exec()  // execute create table statement
      statement, _ = database.Prepare("INSERT INTO student (num,ID,NAME) VALUES (?,?,?)") // make statement for entering values afterwards
 
-     //writer:= bufio.NewWriter(conn) // makes a new writer for port
 
                         for{
                           select {
+                            // reads data from sensors and put them in database
                             case data:=<-data_to_db:{
                               num = num+1
-                              data1:=strings.TrimSuffix(data,"\n")
-                              temp:=strings.Split(data1,",")
+                              data1:=strings.TrimSuffix(data,"\n") // remove '\n'
+                              temp:=strings.Split(data1,",") // split comma separated data into array
                               ID,_:=strconv.Atoi(temp[0])
                               NAME:=temp[1]
-                              statement.Exec(num,ID,NAME)
+                              statement.Exec(num,ID,NAME) // put data to database
                               fmt.Println(num,ID,NAME)
                                   }
 
 
                             case db_query := <- query_to_db :{
-                              //query := strings.TrimSuffix(db_query,"\n")
+                              ///query is passed to database and then response is sent to passServer channel
                               rows, err:= database.Query(db_query)
                       				if err != nil{
                       					fmt.Println("ERROR ROWS",err)
-                                return
+                                break
+
                                 }
                       				var num string
                       				var ID string
                       				var NAME string
                       				var date_time string
                       				for rows.Next() {
-                      					//fmt.Println("in rows.next for loop")
                       					rows.Scan(&num,&ID, &NAME, &date_time)
-                      					total:=  fmt.Sprintf(num + ": " + ID + " ," + NAME )
+                      					total:=  fmt.Sprintf(date_time + "::::" + num + ": " + ID + " ," + NAME )
                       					fmt.Println(total)
-                                //fmt.Println("total -----")
-                                //fmt.Println("type of total:",reflect.TypeOf(total))
-                      				  passServer <- total
-                      					//fmt.Println("sent over res_to_query")
-                                //    writer.WriteString(total)
-                              }
+                                passServer <- total
+                      				}
                       			}
                           }
                         }
