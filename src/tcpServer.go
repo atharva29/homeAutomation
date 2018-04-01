@@ -56,7 +56,6 @@ func res(conn net.Conn){
         text,err:=reader.ReadString('\n')
         if err != nil {
           fmt.Println("Client DISCONNECTED")
-          pass <- "close"   // this will close the writer
           return
           } else {
             fmt.Println("text : " + text)   // print the recieved data
