@@ -17,8 +17,8 @@ import (
 )
 
 
-
-
+var passFlag = make(chan int)
+var flag = 0 // flag
 var indicator = 0   // indicator = 0 , not connected to server , if its '1' means connected to server
 var num = 0   // auto increment of database
 var pass  = make(chan string)   // channel for Cient data
@@ -32,11 +32,11 @@ var NewClient = make(chan net.Conn)// it carries connection of deviceID,going to
 
 
 func main(){
-//   V1 := make([]float64 , 8)
-//   V2 := make([]float64 , 8)
-//   I :=  make([]float64 , 2)
-//
-// fmt.Println(V1)
+  V1 := make([]float64 , 8)
+  V2 := make([]float64 , 8)
+  I :=  make([]float64 , 2)
+
+//fmt.Println(V1)
 fmt.Println("Start")
 l,err := net.Listen("tcp",":2000")  //set a server listening at port 20000
 if err!=nil{
@@ -50,7 +50,7 @@ go Mapper()
                 fmt.Println(err)
                 }
              go Reader()      //function for reading data from user input
-             go res(conn)        //function for reading data from client
+             go res(conn,V1,V2,I)        //function for reading data from client
              go writer(conn)     // writer writes data to port
         }
   }
@@ -59,7 +59,7 @@ go Mapper()
 
 
 //function :- This function reads data from CLIENT and display it
-func res(conn net.Conn){
+func res(conn net.Conn,V1 []float64 ,V2 []float64 ,I []float64){
     var dev string
     readerStep := 0
     reader := bufio.NewReader(conn)     // set a new reader for tcp
@@ -77,16 +77,60 @@ func res(conn net.Conn){
             if readerStep == 0{
               temp :=strings.Split(text, ",")
               dev =temp[1]
-              deviceID <- dev
+              dev1 :=strings.TrimSuffix(dev,"\n")
+              deviceID <- dev1
               NewClient <- conn
               fmt.Println("deviceID :=" , dev)
               readerStep = 1
             }
-            fmt.Println("text : " + text)   // print the recieved data
+
+            if flag == 1 {
+              makeZero(V2)
+              makeZero(I)
+              //array 1 = text[] + 0
+              //array 2 = 000... + 0
+                } else if flag == 2{
+              makeZero(V1)
+              makeZero(I)
+              //array 1 = 000... + 0
+              //array 2 = text[] + 0
+            }
+            } else if flag == 3{
+              makeZero(V2)
+              makeZero(V1)
+              //array 1 = 000... + text[0]
+              //array 2 = 000... + text[1]
+            }
+            }else if flag == 4{
+              makeZero(I)
+              // if Device is ard1 then
+              // array1 = text[] + 0
+              //if device is ard2 then
+              //array2 = text[] + 0
+            }else if flag == 5{
+              makeZero(V1)
+              //if device is ard3 then
+              // I = text[]
+              // if Device is ard2 then
+              //V2 =text[]
+              //array2 = V2[] + 0
+              // array1 = 0000... + I[0]
+            }else if flag == 6{
+              makeZero(V2)
+              // if Device is ard3 then
+              // I = text[]
+              //if device is ard1 then
+              //V1 = text[]
+              //array2 = V1[] + I[]
+              // array1 = 000... + I[]
+                          }
+
+           fmt.Println("text : " + text)   // print the recieved data
            data_to_db <- text
             }
           }
       }
+
 
 // this function maintains a map of active connections with their device ID
 func Mapper(){
@@ -100,21 +144,95 @@ func Mapper(){
           for k, v := range Mapper {
             if v == c {
               delete(Mapper, k)
-              fmt.Println("newmap:" , Mapper)
+            //  fmt.Println("newmap:" , Mapper)
                 }
                   }
               } else{
               Mapper[dev] = c
-              fmt.Println("new connection mapped")
-              fmt.Println("map:",Mapper)
-              fmt.Println(len(Mapper))
+          //    fmt.Println("new connection mapped")
+          //    fmt.Println("map:",Mapper)
+          //    fmt.Println(len(Mapper))
                 }
         }
      }
-     fmt.Println(len(Mapper))
+     missingConnection(Mapper)
+
   }
 }
 
+func missingConnection(Mapper map[string]net.Conn){
+  var key =make([]string,0)
+  fmt.Println(len(Mapper))
+
+  if len(Mapper) == 3 {
+    fmt.Println("ALL DEVICES Connected .......................")
+    //return
+  }else if len(Mapper) == 0{
+    fmt.Println("No Devices Connected....................")
+    flag = 0
+    return
+  }
+  for k,_:= range Mapper{
+  key = append(key,k)
+  }
+  //fmt.Println("K:=",key)
+
+  i := 0
+
+    if len(key)==1{
+        if key[i]=="ard1"{
+          fmt.Println("Missing ARD2 and ARD3 ..............")
+          flag = 1
+
+          } else if key[i] == "ard2"{
+          fmt.Println("Missing ARD1 and ARD3 .............")
+          flag = 2
+
+          } else{
+            fmt.Println("Missing ARD1 and ARD2 .............")
+            flag = 3
+          }
+
+        } else if len(key)==2{
+              if key[i] =="ard1" || key[i] == "ard2"{
+                if key[i+1] == "ard2" || key[i+1] =="ard1"{
+                      fmt.Println("Missing ARD3 ................")
+                      flag = 4
+                      }
+                }
+                if key[i] == "ard2" || key[i] == "ard3"{
+                      if key[i+1] =="ard3" || key[i+1] =="ard2" {
+                        fmt.Println("Missing ARD1 ...............")
+                        flag = 5
+                      }
+                }
+                if key[i] == "ard1" || key[i] == "ard3"{
+                      if key[i+1] =="ard3" || key[i+1] =="ard1" {
+                        fmt.Println("Missing ARD2 ...............")
+                        flag = 6
+                      }
+                 }
+           }
+}
+
+
+func makeZero(temp []float64){
+  for i :=0 ; i <len(temp) ; i++{
+    temp[i] = 0
+  }
+}
+
+//
+// func intToString(values []int){
+//     valuesText := []string{}
+//     for i := range values {
+//         number := values[i]
+//         text := strconv.Itoa(number)
+//         valuesText = append(valuesText, text)
+//       }
+//       result := strings.Join(valuesText, "+")
+//       return result
+// }
 
 
 //function:- this function read input from user
