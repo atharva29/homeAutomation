@@ -242,7 +242,7 @@ func writer(conn net.Conn){
 
 
    func database(){
-     os.Remove("./attendance.db")
+//     os.Remove("./attendance.db")
    	 database, _ := sql.Open("sqlite3","./attendance.db")       // creates a new db file
      statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS student (num INTEGER PRIMARY KEY,ID INTEGER NULL, NAME TEXT NULL,date_time DATETIME DEFAULT CURRENT_TIMESTAMP )")  //create table
      statement.Exec()  // execute create table statement
@@ -255,12 +255,34 @@ func writer(conn net.Conn){
 
           statement2, _ := database.Prepare("CREATE TABLE IF NOT EXISTS student2 (num INTEGER PRIMARY KEY,ID INTEGER NULL, NAME STRING NULL,date_time DATETIME DEFAULT CURRENT_TIMESTAMP )")  //create table
           statement2.Exec()  // execute create table statement
-          statement2, _ = database.Prepare("INSERT INTO student2 (num,ID,NAME) VALUES (?,?,?)") // make statement for entering values afterwards
+          statement2, _ = database.Prepare("INSERT INTO student2 (num,ID,NAME) VALUES (?,?,?)") // make statement fo//r entering values afterwards
 
 
+          statement3, _ := database.Prepare("CREATE TABLE IF NOT EXISTS counter(num INTEGER PRIMARY KEY,ID1 INTEGER NULL,ID2 INTEGER NULL,ID3 INTEGER NULL  )")  //create table
+          statement3.Exec()  // execute create table statement
+          statement3, _ = database.Prepare("INSERT INTO counter (num,ID1,ID2,ID3) VALUES (?,?,?,?)") // make statement for entering values afterwards
+          statement3.Exec(1,0,0,0)
 
+          numStatement,_:=database.Prepare("UPDATE counter SET ID1 =? WHERE num = 1;")
+          num1Statement,_:=database.Prepare("UPDATE counter SET ID2 =? WHERE num= 1;")
+          num2Statement,_:=database.Prepare("UPDATE counter SET ID3=? WHERE num = 1;")
 
-
+        //  if num ==0 || num1 == 0 || num2 == 0{
+            rows, _:= database.Query("select * from counter where num = 1")
+            var num int
+            var ID1 int
+            var ID2 int
+            var ID3 int
+            for rows.Next() {
+              rows.Scan(&num,&ID1, &ID2, &ID3)
+              fmt.Println("retrived Rows are  ID1 = " , ID1)
+              fmt.Println("retrived Rows are  ID2 = " , ID2)
+              fmt.Println("retrived Rows are  ID3 = " , ID3)
+              num = ID1
+              num1 = ID2
+              num2 = ID3
+              }
+          //  }
 
                         for{
                           select {
@@ -274,18 +296,21 @@ func writer(conn net.Conn){
                                 statement.Exec(num,ID,NAME) // put data to database
                                 fmt.Println(num,ID,NAME)
                                 num = num+1
+                                numStatement.Exec(num)
                               }
                                  if NAME =="ard2"{
                                   statement1.Exec(num1,ID,NAME) // put data to database
                                   fmt.Println(num1,ID,NAME)
                                   num1 = num1+1
+                                  num1Statement.Exec(num1)
                                 }
                                  if  NAME =="ard3"{
                                   statement2.Exec(num2,ID,NAME) // put data to database
                                   fmt.Println(num2,ID,NAME)
                                   num2 = num2+1
+                                  num2Statement.Exec(num2)
                                 }
-    }
+                              }
 
 
                             case db_query := <- query_to_db :{
@@ -293,12 +318,9 @@ func writer(conn net.Conn){
                               rows, err:= database.Query(db_query)
                       				if err != nil{
                       					fmt.Println("ERROR ROWS",err)
-
-                        break
-
+                                break
                                 }
-
-              				var num string
+                              var num string
                       				var ID string
                       				var NAME string
                       				var date_time string
@@ -311,7 +333,7 @@ func writer(conn net.Conn){
                       			}
                           }
                         }
-                }
+                      }
 
 
 // function for writing data to server , used to pass response for query to server
