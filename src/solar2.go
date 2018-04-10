@@ -278,9 +278,9 @@ func writer(conn net.Conn){
               fmt.Println("retrived Rows are  ID1 = " , ID1)
               fmt.Println("retrived Rows are  ID2 = " , ID2)
               fmt.Println("retrived Rows are  ID3 = " , ID3)
-              num = ID1
-              num1 = ID2
-              num2 = ID3
+              num = ID1 + 1
+              num1 = ID2 + 1
+              num2 = ID3 + 1
               }
           //  }
 
