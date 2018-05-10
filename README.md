@@ -10,3 +10,27 @@ tcpBadaServer := this code will run in user's computer and acts as a server to t
 
 NETCAT CODE - Currently i am using netcat on client side. NetCat connects to server and sends data in form 1,ard1
 in which 1 will be the roll number of the person and ard1 is the device name .
+
+
+DATABASE 
+We have 1 database whose name is attendance.db and it contains 4 tables 
+1. student
+2.student1 
+3.student2 
+4.counter 
+// i will replace this names by SE,TE,BE 
+
+student TABLE = In this tables there are 3 rows ,
+i. num = num is the primary key for database
+ii.id = id is the integer for roll number 
+iii.name = name is for CLASS (eg. SE , TE , BE )
+iv. date_time = puts current date time in database
+
+Similarly for student1 ,student2 there are num1 , num2 and ID1 and ID2 respectively 
+
+Counter table contains 4 colums :
+1.num = this num is always 1 
+ ID1 , ID2  , ID3    are the respective num values of each repective tables 
+2.ID1 = holds num value of student 
+3. ID2 = holds num value of student1
+4. ID3 = holds num value of student2
