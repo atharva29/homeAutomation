@@ -12,7 +12,7 @@ var pass  = make(chan string)   // channel for Cient data
 
 func main(){
 fmt.Println("Start")
-l,err := net.Listen("tcp",":6600")  //set a server listening at port 6600
+l,err := net.Listen("tcp",":6600")  //set a server listening at port 20000
 if err!=nil{
   printErr(err)
   }
@@ -40,11 +40,7 @@ for {
             pass <- "close"   // this will close the writer
             return
             } else {
-                if (text == "echo\n"){    // this condition is used for checking connection
-                  pass <-text
-                }
               fmt.Println("text : " + text)   // print the recieved data
-              //dbChannel <- text
               }
             }
         }
@@ -84,7 +80,6 @@ for {
           writer.WriteString(values)    //write string to port
           writer.Flush()                // clear the buffer
             }  else if (values == "close"){ // if reading error is found then close the connection
-                      conn.Close()      // closes the connection
                       return
                 }
               }
