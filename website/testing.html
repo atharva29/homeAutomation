@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+  var ws =new WebSocket("ws://localhost:3000/ws1");
+  // var info = {Lat: 12.000}
+  ws.onmessage = function (event) {
+  console.log(event.data);
+  var info = JSON.parse(event.data);
+  //document.write(info.Lat);
+  function  Print(info){
+    console.log(info.Lat);
+  }
+    Print(info) ;
+  }
+
+
+  </script>
+  <script>
+;
+  //  var otherObj = { Lat : info.Lat };
+  //  document.write(info.Lat);
+  </script>
+</body>
+</html>
