@@ -47,19 +47,19 @@ function initMap(info) {
         "content": "<h1> VJTI chi Kachra Kundi </h1>",
         "lat": info.Lat,
         "lng": info.Lng,
-        "iconImage": 'dustIcon.png'
+        "iconImage": 'images/dustBlack.png'
       },
       {
         "content": "<h1> DADAR chi Kachra Kundi </h1>",
         "lat": 19.0213,
         "lng": 72.84243,
-        "iconImage": 'dustIcon.png'
+        "iconImage": 'images/dustBlue.png'
       },
       {
         "content": "<h1> DOMBIVLI chi Kachra Kundi </h1>",
         "lat": 19.0213,
         "lng": 72.86243,
-        "iconImage": 'dustIcon.png'
+        "iconImage": 'images/dustYellow.png'
       }
     ]
   }
@@ -100,10 +100,15 @@ function initMap(info) {
         content: props.content,
       });
 
-      marker.addListener('click', function() {
+      marker.addListener('mouseover', function() {
         infoWindow.open(map, marker, content);
       });
+
+      marker.addListener('mouseout', function() {
+        infoWindow.close(map, marker, content);
+      });
     }
+
 
 
     //Check for custom icon image

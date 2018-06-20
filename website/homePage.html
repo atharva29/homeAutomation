@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=`device-width`, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css">
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js">
+    < script type = "text/javascript"
+    src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" >
+  </script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  </script>
+
+
+</head>
+
+<body>
+  <!-- Navigation Bar start -->
+  <nav data-activates="mobile-demo" class="button-collapse">
+    <div class="nav-wrapper">
+      <a href="#!" class="brand-logo">LoraWan</a>
+      <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
+      <ul class="right hide-on-med-and-down">
+        <li><a href="">Activites</a></li>
+        <li><a href="">Inbox</a></li>
+        <li><a href="">Help</a></li>
+        <li><a href="">Talk</a></li>
+      </ul>
+      <ul class="side-nav" id="mobile-demo">
+        <li><a href="">See live analytics</a></li>
+        <li><a href="">Our Products</a></li>
+        <li><a href="">Contact Us</a></li>
+      </ul>
+    </div>
+  </nav>
+  <script type="text/javascript">
+    $(".button-collapse").sideNav();
+  </script>
+
+
+  <!-- Navigation Bar END -->
+  <!-- Imgae slider begins -->
+  <div class="slider">
+    <ul class="slides">
+      <li>
+        <img src="images/chashma.jpg">
+        <!-- random image -->
+        <div class="caption center-align">
+          <h3>Boost with CapeJar</h3>
+          <h5 class="light grey-text text-lighten-3">Grow your business</h5>
+        </div>
+      </li>
+      <li>
+        <img src="images/india-gate.jpg">
+        <!-- random image -->
+        <div class="caption left-align">
+          <h3>Tools Designed for you</h3>
+          <h5 class="light grey-text text-lighten-3">Easy to configure</h5>
+        </div>
+      </li>
+      <li>
+        <img src="images/red-chashma.jpg">
+        <!-- random image -->
+        <div class="caption right-align">
+          <h3>Right Aligned Caption</h3>
+          <h5 class="light grey-text text-lighten-3">Here's our small slogan.</h5>
+        </div>
+      </li>
+      <li>
+        <img src="images/4.jpg">
+        <!-- random image -->
+        <div class="caption center-align">
+          <h3>This is our big Tagline!</h3>
+          <h5 class="light grey-text text-lighten-3">Here's our small slogan.</h5>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('.slider').slider({
+        full_width: true
+      });
+    });
+  </script>
+  <!-- Image slider Ends -->
+
+
+
+
+</body>
+
+</html>
